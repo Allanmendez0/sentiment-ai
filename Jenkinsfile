@@ -22,14 +22,20 @@ pipeline {
         // Stage 2: Lint - Analyse du code avec flake8
         stage('Lint') {
             steps {
-                sh """
-                    echo "Workspace : ${WORKSPACE}"
-                    docker run --rm \
-                        -v ${WORKSPACE}:/app \
-                        -w /app \
-                        python:3.12-slim \
-                        sh -c "pip install flake8 -q && flake8 src/ --max-line-length=100"
-                """
+                script {
+                    def workspace = pwd()
+                    sh """
+                        echo "Workspace : ${workspace}"
+                        echo "Contenu du workspace :"
+                        ls -la ${workspace}
+                        
+                        docker run --rm \
+                            -v ${workspace}:/app \
+                            -w /app \
+                            python:3.12-slim \
+                            sh -c "pip install flake8 -q && ls -la && flake8 src/ --max-line-length=100"
+                    """
+                }
             }
         }
         
