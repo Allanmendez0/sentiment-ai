@@ -19,7 +19,7 @@ pipeline {
             }
         }
         
-        // Stage 2: Lint - Analyse du code avec flake8
+        // Stage 2: Lint - Analyse du code avec flake8 (sans montage de volume)
         stage('Lint') {
             steps {
                 sh """
@@ -27,16 +27,9 @@ pipeline {
                     echo "Contenu du workspace :"
                     ls -la ${WORKSPACE}
                     
-                    # Copier les sources dans un répertoire temporaire
-                    cp -r ${WORKSPACE} /tmp/workspace
-                    
-                    docker run --rm \
-                        -v /tmp/workspace:/app \
-                        -w /app \
-                        python:3.12-slim \
-                        sh -c "pip install flake8 -q && ls -la && flake8 src/ --max-line-length=100"
-                    
-                    rm -rf /tmp/workspace
+                    # Installer flake8 et lancer l'analyse directement
+                    pip install flake8 -q
+                    flake8 ${WORKSPACE}/src/ --max-line-length=100
                 """
             }
         }
