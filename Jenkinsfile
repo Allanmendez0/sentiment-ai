@@ -23,8 +23,9 @@ pipeline {
         stage('Lint') {
             steps {
                 sh """
+                    echo "Workspace : ${WORKSPACE}"
                     docker run --rm \
-                        -v \$WORKSPACE:/app \
+                        -v ${WORKSPACE}:/app \
                         -w /app \
                         python:3.12-slim \
                         sh -c "pip install flake8 -q && flake8 src/ --max-line-length=100"
