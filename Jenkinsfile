@@ -19,19 +19,30 @@ pipeline {
             }
         }
         
-        // Stage 2: Lint - Analyse du code avec flake8
+        // Stage 2: Lint - Exécuté dans un conteneur Docker avec COPY
         stage('Lint') {
-            agent {
-                docker {
-                    image 'python:3.12-slim'
-                    args '-v /var/jenkins_home/workspace/sentiment-ai-pipeline:/app -w /app'
-                }
-            }
             steps {
-                sh '''
-                    pip install flake8 -q
-                    flake8 src/ --max-line-length=100
-                '''
+                sh """
+                    echo "Workspace : ${WORKSPACE}"
+                    
+                    # Créer un Dockerfile temporaire pour le lint
+                    cat > Dockerfile.lint << 'EOF'
+FROM python:3.12-slim
+WORKDIR /app
+COPY . /app/
+RUN pip install flake8 -q
+CMD ["flake8", "src/", "--max-line-length=100"]
+EOF
+
+                    # Construire l'image de lint
+                    docker build -f Dockerfile.lint -t lint-image .
+
+                    # Exécuter le lint
+                    docker run --rm lint-image
+
+                    # Nettoyer
+                    rm -f Dockerfile.lint
+                """
             }
         }
         
