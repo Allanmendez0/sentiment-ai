@@ -19,18 +19,19 @@ pipeline {
             }
         }
         
-        // Stage 2: Lint - Analyse du code avec flake8 (sans montage de volume)
+        // Stage 2: Lint - Analyse du code avec flake8
         stage('Lint') {
+            agent {
+                docker {
+                    image 'python:3.12-slim'
+                    args '-v /var/jenkins_home/workspace/sentiment-ai-pipeline:/app -w /app'
+                }
+            }
             steps {
-                sh """
-                    echo "Workspace : ${WORKSPACE}"
-                    echo "Contenu du workspace :"
-                    ls -la ${WORKSPACE}
-                    
-                    # Installer flake8 et lancer l'analyse directement
+                sh '''
                     pip install flake8 -q
-                    flake8 ${WORKSPACE}/src/ --max-line-length=100
-                """
+                    flake8 src/ --max-line-length=100
+                '''
             }
         }
         
